@@ -192,6 +192,517 @@
 							"response": []
 						},
 						{
+							"name": "user_list_after_login_role_id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Verify 'message' is 'User data fetched'\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.message).to.eql(\"User data fetched\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Verify 'statusCode' is 200\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.statusCode).to.eql(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Verify 'success' is true\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.success).to.be.true;\r",
+											"});\r",
+											"\r",
+											"// Get the roleId from the environment\r",
+											"let roleId = parseInt(pm.environment.get(\"roleId\"), 10);\r",
+											"\r",
+											"// Parse the response\r",
+											"let response = pm.response.json();\r",
+											"\r",
+											"// Check if roleId is 1 or 2\r",
+											"if (roleId === 1 || roleId === 2) {\r",
+											"    // Validate that the response is successful\r",
+											"    pm.test(\"Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Success is true\", function () {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    // Check if the first element in the data array has the correct roleId\r",
+											"    pm.test(\"First data item has correct roleId\", function () {\r",
+											"        pm.expect(response.data[0].roleId).to.eql(roleId);\r",
+											"    });\r",
+											"}\r",
+											"\r",
+											"\r",
+											"// Define the expected fields in the main response\r",
+											"const expectedFields = [\"data\", \"errors\", \"message\", \"statusCode\", \"success\"];\r",
+											"\r",
+											"// Get the actual response\r",
+											"const actualResponse = pm.response.json();\r",
+											"\r",
+											"// Verify that each expected field is present in the response\r",
+											"expectedFields.forEach(field => {\r",
+											"    pm.test(`Field ${field} is present in the response`, function () {\r",
+											"        pm.expect(actualResponse).to.have.property(field);\r",
+											"    });\r",
+											"});\r",
+											"\r",
+											"// Verify that the 'data' field is an array and contains the expected fields within the first object\r",
+											"pm.test(\"Verify that 'data' contains the expected fields\", function () {\r",
+											"    pm.expect(actualResponse.data).to.be.an(\"array\").that.is.not.empty;\r",
+											"    \r",
+											"    const user = actualResponse.data[0];\r",
+											"    const userExpectedFields = [\"email\", \"firstName\", \"lastName\", \"image\", \"phone\", \"role\", \"roleId\", \"status\", \"userId\" ];\r",
+											"    \r",
+											"    userExpectedFields.forEach(field => {\r",
+											"        pm.expect(user).to.have.property(field);\r",
+											"    });\r",
+											"});\r",
+											"\r",
+											"// Extract the response JSON\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"// Check if the email is not null\r",
+											"pm.test(\"Email is not null\", function () {\r",
+											"    let email = jsonData.data[0].email;\r",
+											"    pm.expect(email).to.not.be.null;\r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Get the current roleId from the environment, or initialize it to 1\r",
+											"let roleId = pm.environment.get(\"roleId\") || 1;\r",
+											"\r",
+											"// Increment the roleId, cycling through 1, 2, and 3\r",
+											"roleId = (roleId % 2) + 1;\r",
+											"\r",
+											"// Set the updated roleId back to the environment\r",
+											"pm.environment.set(\"roleId\", roleId);\r",
+											"\r",
+											"// Set the roleId in the request body\r",
+											"let requestData = {\r",
+											"    \"roleId\": roleId\r",
+											"};\r",
+											"\r",
+											"// Update the request body with the new roleId\r",
+											"pm.request.body.raw = JSON.stringify(requestData);\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"roleId\":{{roleId}}\r\n}\r\n\r\n// {\r\n//  \"userId\":{{Admin_id}} // Set manually if environment changed\r\n// }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}user-data",
+									"host": [
+										"{{base_url}}user-data"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "user_list_after_login_role_id_3",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Parse the response\r",
+											"let response = pm.response.json();\r",
+											"\r",
+											"// Validate that the response has the correct status code\r",
+											"pm.test(\"Status code is 404\", function () {\r",
+											"    pm.response.to.have.status(404);\r",
+											"});\r",
+											"\r",
+											"// Validate that the response contains the expected error message\r",
+											"pm.test(\"Error message 'Role ID not found' is present\", function () {\r",
+											"    pm.expect(response.errors).to.include(\"Role ID not found\");\r",
+											"});\r",
+											"\r",
+											"// Validate that success is false\r",
+											"pm.test(\"Success is false\", function () {\r",
+											"    pm.expect(response.success).to.be.false;\r",
+											"});\r",
+											"\r",
+											"// Validate that message is null\r",
+											"pm.test(\"Message is null\", function () {\r",
+											"    pm.expect(response.message).to.be.null;\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"roleId\":3\r\n}\r\n\r\n// {\r\n//  \"userId\":{{Admin_id}} // Set manually if environment changed\r\n// }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}user-data",
+									"host": [
+										"{{base_url}}user-data"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "user_list_after_login_status_with_roleId_1",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the current status from the environment\r",
+											"let status = pm.environment.get(\"status\");\r",
+											"\r",
+											"// Define the expected response structure when users are found\r",
+											"function validateUserData(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should contain data array\", () => {\r",
+											"        pm.expect(response.data).to.be.an('array');\r",
+											"        response.data.forEach(user => {\r",
+											"            pm.expect(user).to.have.all.keys(\r",
+											"                \"createdBy\", \"email\", \"firstName\",\r",
+											"                \"image\", \"lastName\", \r",
+											"                \"phone\", \"role\", \"roleId\",\r",
+											"                \"status\", \"updatedBy\", \"userId\",\r",
+											"            );\r",
+											"        });\r",
+											"    });\r",
+											"}\r",
+											"\r",
+											"// Define the expected response structure when no users are found\r",
+											"function validateNoUsersFound(response) {\r",
+											"    pm.test(\"Response should have success set to false\", () => {\r",
+											"        pm.expect(response.success).to.be.false;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 404\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(404);\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should contain errors array\", () => {\r",
+											"        pm.expect(response.errors).to.be.an('array').that.is.not.empty;\r",
+											"        pm.expect(response.errors[0]).to.eql(\"No users found with the given role ID and status\");\r",
+											"    });\r",
+											"}\r",
+											"\r",
+											"// Parse the response\r",
+											"let response = pm.response.json();\r",
+											"\r",
+											"// Check if the status is Pending, Active, or InActive\r",
+											"if ([\"Pending\", \"Active\", \"InActive\"].includes(status)) {\r",
+											"    pm.test(`Status is '${status}', validate response accordingly`, () => {\r",
+											"        if (pm.response.code === 200) {\r",
+											"            validateUserData(response);\r",
+											"        } else if (pm.response.code === 404) {\r",
+											"            validateNoUsersFound(response);\r",
+											"        } else {\r",
+											"            pm.test(\"Unexpected response code\", () => {\r",
+											"                pm.expect.fail(`Received unexpected status code: ${pm.response.code}`);\r",
+											"            });\r",
+											"        }\r",
+											"    });\r",
+											"} else {\r",
+											"    pm.test(\"Unexpected status value\", () => {\r",
+											"        pm.expect.fail(`Received unexpected status value: ${status}`);\r",
+											"    });\r",
+											"}\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// 1. Handling roleId: Get the current roleId from the environment, or initialize it to 1\r",
+											"let roleId = pm.environment.get(\"roleId\") || 1;\r",
+											"\r",
+											"// Increment the roleId, cycling through 1, 2, and 3\r",
+											"roleId = (roleId % 1) + 1;\r",
+											"\r",
+											"// Set the updated roleId back to the environment\r",
+											"pm.environment.set(\"roleId\", roleId);\r",
+											"\r",
+											"// 2. Handling status: Get the current status from the environment, or initialize it to \"Pending\"\r",
+											"let status = pm.environment.get(\"status\") || \"Pending\";\r",
+											"\r",
+											"// Define the sequence of statuses\r",
+											"const statuses = [\"Pending\", \"Active\", \"InActive\"];\r",
+											"\r",
+											"// Find the current index of the status in the sequence\r",
+											"let currentIndex = statuses.indexOf(status);\r",
+											"\r",
+											"// Set the next status in the sequence, cycling back to the start if needed\r",
+											"status = statuses[(currentIndex + 1) % statuses.length];\r",
+											"\r",
+											"// Set the updated status back to the environment\r",
+											"pm.environment.set(\"status\", status);\r",
+											"\r",
+											"// Log the current values for debugging purposes\r",
+											"console.log(\"Current roleId value:\", roleId);\r",
+											"console.log(\"Current status value:\", status);\r",
+											"\r",
+											"// Create the request data object including both roleId and status\r",
+											"let requestData = {\r",
+											"    \"roleId\": roleId,\r",
+											"    \"status\": status\r",
+											"};\r",
+											"\r",
+											"// Update the request body with the new roleId and status values\r",
+											"pm.request.body.raw = JSON.stringify(requestData);\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "\r\n\r\n// {\r\n//  \"userId\":{{Admin_id}} // Set manually if environment changed\r\n// }\r\n\r\n{\r\n    \"status\": {{status}},//Active or InActive\r\n    \"roleId\": 1      \r\n}\r\n\r\n// {\r\n//     \"status\": \"InActive\",\r\n//     \"roleId\": 1\r\n// }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}user-data",
+									"host": [
+										"{{base_url}}user-data"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "user_list_after_login_status_with_roleId_2",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the current status from the environment\r",
+											"let status = pm.environment.get(\"status\");\r",
+											"\r",
+											"// Define the expected response structure when users are found\r",
+											"function validateUserData(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should contain data array\", () => {\r",
+											"        pm.expect(response.data).to.be.an('array');\r",
+											"        response.data.forEach(user => {\r",
+											"            pm.expect(user).to.have.all.keys(\r",
+											"                \"country\", \"createdBy\", \"email\", \"firstName\", \"highestqualification\",\r",
+											"                \"image\", \"industrytype\", \"lastName\", \"midName\", \"organization\",\r",
+											"                \"phone\", \"pincode\", \"postaladdress\", \"prefix\", \"role\", \"roleId\",\r",
+											"                \"state\", \"status\", \"street\", \"surveyorRank\", \"updatedBy\", \"userId\",\r",
+											"                \"yearofpassing\"\r",
+											"            );\r",
+											"        });\r",
+											"    });\r",
+											"}\r",
+											"\r",
+											"// Define the expected response structure when no users are found\r",
+											"function validateNoUsersFound(response) {\r",
+											"    pm.test(\"Response should have success set to false\", () => {\r",
+											"        pm.expect(response.success).to.be.false;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 404\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(404);\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should contain errors array\", () => {\r",
+											"        pm.expect(response.errors).to.be.an('array').that.is.not.empty;\r",
+											"        pm.expect(response.errors[0]).to.eql(\"No users found with the given role ID and status\");\r",
+											"    });\r",
+											"}\r",
+											"\r",
+											"// Parse the response\r",
+											"let response = pm.response.json();\r",
+											"\r",
+											"// Check if the status is Pending, Active, or InActive\r",
+											"if ([\"Pending\", \"Active\", \"InActive\"].includes(status)) {\r",
+											"    pm.test(`Status is '${status}', validate response accordingly`, () => {\r",
+											"        if (pm.response.code === 200) {\r",
+											"            validateUserData(response);\r",
+											"        } else if (pm.response.code === 404) {\r",
+											"            validateNoUsersFound(response);\r",
+											"        } else {\r",
+											"            pm.test(\"Unexpected response code\", () => {\r",
+											"                pm.expect.fail(`Received unexpected status code: ${pm.response.code}`);\r",
+											"            });\r",
+											"        }\r",
+											"    });\r",
+											"} else {\r",
+											"    pm.test(\"Unexpected status value\", () => {\r",
+											"        pm.expect.fail(`Received unexpected status value: ${status}`);\r",
+											"    });\r",
+											"}\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// 1. Handling roleId: Set roleId to a static value of 2\r",
+											"let roleId = 2;\r",
+											"\r",
+											"// Set the roleId to the environment (though it's static in this case, it's good practice to update it)\r",
+											"pm.environment.set(\"roleId\", roleId);\r",
+											"\r",
+											"// 2. Handling status: Get the current status from the environment, or initialize it to \"Pending\"\r",
+											"let status = pm.environment.get(\"status\") || \"Pending\";\r",
+											"\r",
+											"// Define the sequence of statuses\r",
+											"const statuses = [\"Pending\", \"Active\", \"InActive\"];\r",
+											"\r",
+											"// Find the current index of the status in the sequence\r",
+											"let currentIndex = statuses.indexOf(status);\r",
+											"\r",
+											"// Set the next status in the sequence, cycling back to the start if needed\r",
+											"status = statuses[(currentIndex + 1) % statuses.length];\r",
+											"\r",
+											"// Set the updated status back to the environment\r",
+											"pm.environment.set(\"status\", status);\r",
+											"\r",
+											"// Log the current values for debugging purposes\r",
+											"console.log(\"Current roleId value:\", roleId);\r",
+											"console.log(\"Current status value:\", status);\r",
+											"\r",
+											"// Create the request data object including both roleId and status\r",
+											"let requestData = {\r",
+											"    \"roleId\": roleId,\r",
+											"    \"status\": status\r",
+											"};\r",
+											"\r",
+											"// Update the request body with the new roleId and status values\r",
+											"pm.request.body.raw = JSON.stringify(requestData);\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "// {\r\n//  \"userId\":{{Admin_id}} // Set manually if environment changed\r\n// }\r\n\r\n{\r\n    \"status\": {{status}},//Active or InActive\r\n    \"roleId\": 2     \r\n}\r\n\r\n// {\r\n//     \"status\": \"InActive\",\r\n//     \"roleId\": 1\r\n// }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}user-data",
+									"host": [
+										"{{base_url}}user-data"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "user_list_after_login_full",
 							"event": [
 								{
@@ -1191,6 +1702,91 @@
 							"response": []
 						},
 						{
+							"name": "surveyor-grades-add-already-exists",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Test script\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains errors\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.errors[0]).to.eql(\"This surveyor rank already exists.\");\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"Success is false\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.success).to.be.false;\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"response time\",function()\r",
+											"{\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+											"});\r",
+											"\r",
+											"\r",
+											"// Define the expected fields\r",
+											"const expectedFields = [\"errors\", \"message\", \"statusCode\", \"success\"];\r",
+											"\r",
+											"// Get the actual response\r",
+											"const actualResponse = pm.response.json();\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"surveyorRank\":\"{{surveyorRank1}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}surveyor-rank-add",
+									"host": [
+										"{{base_url}}surveyor-rank-add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "surveyor-rank-data-after-add",
 							"event": [
 								{
@@ -1301,12 +1897,139 @@
 							"response": []
 						},
 						{
+							"name": "surveyor-rank-data-after-add-is-active",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment\r",
+											"let isActive = pm.environment.get(\"isActive\");\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"     // Check if the data array is not empty\r",
+											"    if (response.data.length > 0) {\r",
+											"        // Verify that the first element in the data array has the correct isActive value\r",
+											"        pm.test(\"First data element should have isActive value matching the request\", () => {\r",
+											"            pm.expect(response.data[0]).to.have.property('isActive', isActive);\r",
+											"        });\r",
+											"    }\r",
+											"}\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateNoDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should contain an empty data array\", () => {\r",
+											"        pm.expect(response.data).to.be.an('array').that.is.empty;\r",
+											"    });\r",
+											"\r",
+											"}\r",
+											"\r",
+											"// Parse the response\r",
+											"let response = pm.response.json();\r",
+											"\r",
+											"// Check if the isActive value is 0 or 1\r",
+											"if ([0, 1].includes(isActive)) {\r",
+											"    pm.test(`isActive is '${isActive}', validate response accordingly`, () => {\r",
+											"        if (response.data && response.data.length > 0) {\r",
+											"            validateDataIsPresent(response);\r",
+											"        } else {\r",
+											"            validateNoDataIsPresent(response);\r",
+											"        }\r",
+											"    });\r",
+											"} else {\r",
+											"    pm.test(\"Unexpected isActive value\", () => {\r",
+											"        pm.expect.fail(`Received unexpected isActive value: ${isActive}`);\r",
+											"    });\r",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment, or initialize it to 0\r",
+											"let isActive = pm.environment.get(\"isActive\") || 0;\r",
+											"\r",
+											"// Toggle isActive between 0 and 1\r",
+											"isActive = (isActive === 1) ? 0 : 1;\r",
+											"\r",
+											"// Set the updated isActive back to the environment\r",
+											"pm.environment.set(\"isActive\", isActive);\r",
+											"\r",
+											"// Set the isActive in the request body\r",
+											"let requestData = {\r",
+											"    \"isActive\": isActive\r",
+											"};\r",
+											"\r",
+											"// Update the request body with the new isActive value\r",
+											"pm.request.body.raw = JSON.stringify(requestData);\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "// {\r\n//     \"surveyorRankId\": {{surveyorRankId}}\r\n// }\r\n\r\n// {\r\n\r\n// }\r\n\r\n{\r\n    \"isActive\":{{isActive}}\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}surveyor-rank-data",
+									"host": [
+										"{{base_url}}surveyor-rank-data"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "surveyor-rank-data-after-add-full",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
+											"pm.test(\"surveyorRank\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.environment.set(\"surveyorRankFromList\", jsonData.data[0].surveyorRank);\r",
+											"});\r",
+											"\r",
+											"\r",
 											"pm.test(\"Verify 'message' is 'Survey rank data retrieved successfully'\", function () {\r",
 											"    var jsonData = pm.response.json();\r",
 											"    pm.expect(jsonData.message).to.eql(\"Surveyor rank data retrieved successfully\");\r",
@@ -1497,6 +2220,91 @@
 								"body": {
 									"mode": "raw",
 									"raw": "{\r\n    \"surveyorRankId\":{{surveyorRankId}},\r\n    \"surveyorRank\":\"{{surveyorRank}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}surveyor-rank-update",
+									"host": [
+										"{{base_url}}surveyor-rank-update"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "surveyor-grades-update-already-exists",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Test script\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains errors\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.errors[0]).to.eql(\"Surveyor rank already exists.\");\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"Success is false\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.success).to.be.false;\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"response time\",function()\r",
+											"{\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+											"});\r",
+											"\r",
+											"\r",
+											"// Define the expected fields\r",
+											"const expectedFields = [\"errors\", \"message\", \"statusCode\", \"success\"];\r",
+											"\r",
+											"// Get the actual response\r",
+											"const actualResponse = pm.response.json();\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"surveyorRankId\":{{surveyorRankId}},\r\n    \"surveyorRank\":\"{{surveyorRankFromList}}\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1759,6 +2567,84 @@
 							"response": []
 						},
 						{
+							"name": "survey-objective-add-already-exists",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Test script\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains errors\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.errors[0]).to.eql(\"This survey objective already exists.\");\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"Success is false\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.success).to.be.false;\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"response time\",function()\r",
+											"{\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+											"});\r",
+											"\r",
+											"\r",
+											"// Define the expected fields\r",
+											"const expectedFields = [\"errors\", \"message\", \"statusCode\", \"success\"];\r",
+											"\r",
+											"// Get the actual response\r",
+											"const actualResponse = pm.response.json();"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"surveyObjective\":\"{{surveyObjective1}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}survey-objective-add",
+									"host": [
+										"{{base_url}}survey-objective-add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "survey-objective-list-after-add",
 							"event": [
 								{
@@ -1866,12 +2752,138 @@
 							"response": []
 						},
 						{
+							"name": "survey-objective-list-after-add-isActive",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment\r",
+											"let isActive = pm.environment.get(\"isActive\");\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"     // Check if the data array is not empty\r",
+											"    if (response.data.length > 0) {\r",
+											"        // Verify that the first element in the data array has the correct isActive value\r",
+											"        pm.test(\"First data element should have isActive value matching the request\", () => {\r",
+											"            pm.expect(response.data[0]).to.have.property('isActive', isActive);\r",
+											"        });\r",
+											"    }\r",
+											"}\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateNoDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should contain an empty data array\", () => {\r",
+											"        pm.expect(response.data).to.be.an('array').that.is.empty;\r",
+											"    });\r",
+											"\r",
+											"}\r",
+											"\r",
+											"// Parse the response\r",
+											"let response = pm.response.json();\r",
+											"\r",
+											"// Check if the isActive value is 0 or 1\r",
+											"if ([0, 1].includes(isActive)) {\r",
+											"    pm.test(`isActive is '${isActive}', validate response accordingly`, () => {\r",
+											"        if (response.data && response.data.length > 0) {\r",
+											"            validateDataIsPresent(response);\r",
+											"        } else {\r",
+											"            validateNoDataIsPresent(response);\r",
+											"        }\r",
+											"    });\r",
+											"} else {\r",
+											"    pm.test(\"Unexpected isActive value\", () => {\r",
+											"        pm.expect.fail(`Received unexpected isActive value: ${isActive}`);\r",
+											"    });\r",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment, or initialize it to 0\r",
+											"let isActive = pm.environment.get(\"isActive\") || 0;\r",
+											"\r",
+											"// Toggle isActive between 0 and 1\r",
+											"isActive = (isActive === 1) ? 0 : 1;\r",
+											"\r",
+											"// Set the updated isActive back to the environment\r",
+											"pm.environment.set(\"isActive\", isActive);\r",
+											"\r",
+											"// Set the isActive in the request body\r",
+											"let requestData = {\r",
+											"    \"isActive\": isActive\r",
+											"};\r",
+											"\r",
+											"// Update the request body with the new isActive value\r",
+											"pm.request.body.raw = JSON.stringify(requestData);\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "// {\r\n//      \"surveyObjectiveId\": {{surveyObjectiveId}}\r\n// }\r\n\r\n// {\r\n   \r\n// }\r\n\r\n{\r\n    \"isActive\":{{isActive}}\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}survey-objective-data",
+									"host": [
+										"{{base_url}}survey-objective-data"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "survey-objective-list-after-add-full",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
+											"pm.test(\"surveyObjective\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.environment.set(\"surveyObjectiveFromList\", jsonData.data[0].surveyObjective);\r",
+											"});\r",
+											"\r",
 											"pm.test(\"Verify 'message' is 'Survey objective data retrieved successfully'\", function () {\r",
 											"    var jsonData = pm.response.json();\r",
 											"    pm.expect(jsonData.message).to.eql(\"Survey objective data retrieved successfully\");\r",
@@ -2069,6 +3081,91 @@
 							"response": []
 						},
 						{
+							"name": "survey-objective-update-already-exists",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Test script\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains errors\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.errors[0]).to.eql(\"Survey objective name already exists.\");\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"Success is false\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.success).to.be.false;\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"response time\",function()\r",
+											"{\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+											"});\r",
+											"\r",
+											"\r",
+											"// Define the expected fields\r",
+											"const expectedFields = [\"errors\", \"message\", \"statusCode\", \"success\"];\r",
+											"\r",
+											"// Get the actual response\r",
+											"const actualResponse = pm.response.json();\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"surveyObjective\": \"{{surveyObjectiveFromList}}\",\r\n  \"surveyObjectiveId\": {{surveyObjectiveId}}\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}survey-objective-update",
+									"host": [
+										"{{base_url}}survey-objective-update"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "survey-objective-list-after-update",
 							"event": [
 								{
@@ -2104,18 +3201,6 @@
 											"// Parse the response body\r",
 											"let responseBody = pm.response.json();\r",
 											"\r",
-											"// Extract data from the response\r",
-											"let responsesurveyObjective = responseBody.data[0].surveyObjective;\r",
-											"\r",
-											"\r",
-											"// Retrieve the stored variables\r",
-											"let storedsurveyObjective = pm.variables.get(\"surveyObjective\"); // Get from local variable scope\r",
-											"\r",
-											"\r",
-											"// Verify surveyObjective\r",
-											"pm.test(\"surveyObjective is correct\", function () {\r",
-											"    pm.expect(responsesurveyObjective).to.eql(storedsurveyObjective);\r",
-											"});\r",
 											"\r",
 											"// Define the expected fields in the main response\r",
 											"const expectedFields = [\"errors\", \"message\", \"statusCode\", \"success\"];\r",
@@ -2191,6 +3276,11 @@
 											"    pm.environment.set(\"assessmentGudlineId\", jsonData.data.assessmentGudlineId);\r",
 											"});\r",
 											"\r",
+											"// Retrieve the values used in the request\r",
+											"let assessmentGuideline = pm.variables.get(\"assessmentGuideline\");\r",
+											"\r",
+											"// Set the values in the environment or collection\r",
+											"pm.environment.set(\"assessmentGuideline1\", assessmentGuideline);\r",
 											"\r",
 											"// Test script\r",
 											"pm.test(\"Status code is 200\", function () {\r",
@@ -2214,11 +3304,7 @@
 											"});\r",
 											"\r",
 											"\r",
-											"// Retrieve the values used in the request\r",
-											"let assessmentGuideline = pm.variables.get(\"assessmentGuideline\");\r",
 											"\r",
-											"// Set the values in the environment or collection\r",
-											"pm.environment.set(\"assessmentGuideline1\", assessmentGuideline);\r",
 											"\r",
 											"\r",
 											"\r",
@@ -2283,6 +3369,84 @@
 								"body": {
 									"mode": "raw",
 									"raw": "{\r\n    \"assessmentGuideline\":\"{{assessmentGuideline}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}assessment-guideline-add",
+									"host": [
+										"{{base_url}}assessment-guideline-add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "assessment-guideline-add-already-exists",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Test script\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains errors\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.errors[0]).to.eql(\"Assessment guideline already exists.\");\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"Success is false\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.success).to.be.false;\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"response time\",function()\r",
+											"{\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+											"});\r",
+											"\r",
+											"\r",
+											"// Define the expected fields\r",
+											"const expectedFields = [\"errors\", \"message\", \"statusCode\", \"success\"];\r",
+											"\r",
+											"// Get the actual response\r",
+											"const actualResponse = pm.response.json();"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"assessmentGuideline\":\"{{assessmentGuideline1}}\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2405,12 +3569,138 @@
 							"response": []
 						},
 						{
+							"name": "assessment-guideline-list-after-add-isActive",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment\r",
+											"let isActive = pm.environment.get(\"isActive\");\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"     // Check if the data array is not empty\r",
+											"    if (response.data.length > 0) {\r",
+											"        // Verify that the first element in the data array has the correct isActive value\r",
+											"        pm.test(\"First data element should have isActive value matching the request\", () => {\r",
+											"            pm.expect(response.data[0]).to.have.property('isActive', isActive);\r",
+											"        });\r",
+											"    }\r",
+											"}\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateNoDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should contain an empty data array\", () => {\r",
+											"        pm.expect(response.data).to.be.an('array').that.is.empty;\r",
+											"    });\r",
+											"\r",
+											"}\r",
+											"\r",
+											"// Parse the response\r",
+											"let response = pm.response.json();\r",
+											"\r",
+											"// Check if the isActive value is 0 or 1\r",
+											"if ([0, 1].includes(isActive)) {\r",
+											"    pm.test(`isActive is '${isActive}', validate response accordingly`, () => {\r",
+											"        if (response.data && response.data.length > 0) {\r",
+											"            validateDataIsPresent(response);\r",
+											"        } else {\r",
+											"            validateNoDataIsPresent(response);\r",
+											"        }\r",
+											"    });\r",
+											"} else {\r",
+											"    pm.test(\"Unexpected isActive value\", () => {\r",
+											"        pm.expect.fail(`Received unexpected isActive value: ${isActive}`);\r",
+											"    });\r",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment, or initialize it to 0\r",
+											"let isActive = pm.environment.get(\"isActive\") || 0;\r",
+											"\r",
+											"// Toggle isActive between 0 and 1\r",
+											"isActive = (isActive === 1) ? 0 : 1;\r",
+											"\r",
+											"// Set the updated isActive back to the environment\r",
+											"pm.environment.set(\"isActive\", isActive);\r",
+											"\r",
+											"// Set the isActive in the request body\r",
+											"let requestData = {\r",
+											"    \"isActive\": isActive\r",
+											"};\r",
+											"\r",
+											"// Update the request body with the new isActive value\r",
+											"pm.request.body.raw = JSON.stringify(requestData);\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "// {\r\n//     \"assessmentGuidelineId\": {{assessmentGudlineId}}\r\n// }\r\n\r\n// {\r\n \r\n// }\r\n\r\n{\r\n    \"isActive\":{{isActive}}\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}assessment-guideline-data",
+									"host": [
+										"{{base_url}}assessment-guideline-data"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "assessment-guideline-list-after-add-full",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
+											"pm.test(\"assessmentGuideline\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.environment.set(\"assessmentGuidelineFromList\", jsonData.data[0].assessmentGuideline);\r",
+											"});\r",
+											"\r",
 											"pm.test(\"Verify 'message' is 'Assessment guideline fetched successfully'\", function () {\r",
 											"    var jsonData = pm.response.json();\r",
 											"    pm.expect(jsonData.message).to.eql(\"Assessment guideline fetched successfully\");\r",
@@ -2613,6 +3903,106 @@
 							"response": []
 						},
 						{
+							"name": "assessment-guideline-update-already-exists",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Function to generate a random string of given length\r",
+											"function generateRandomString(length) {\r",
+											"    let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';\r",
+											"    let result = '';\r",
+											"    for (let i = 0; i < length; i++) {\r",
+											"        result += characters.charAt(Math.floor(Math.random() * characters.length));\r",
+											"    }\r",
+											"    return result;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"// Generate random values\r",
+											"let randomassessmentGuideline = generateRandomString(6);\r",
+											"\r",
+											"// Set variables with generated values\r",
+											"pm.variables.set(\"assessmentGuideline\", randomassessmentGuideline);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Test script\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains errors\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.errors[0]).to.eql(\"Assessment guideline already exists.\");\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"Success is false\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.success).to.be.false;\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"response time\",function()\r",
+											"{\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+											"});\r",
+											"\r",
+											"\r",
+											"// Define the expected fields\r",
+											"const expectedFields = [\"errors\", \"message\", \"statusCode\", \"success\"];\r",
+											"\r",
+											"// Get the actual response\r",
+											"const actualResponse = pm.response.json();\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n \"assessmentGuidelineId\": {{assessmentGudlineId}},\r\n \"assessmentGuideline\":\"{{assessmentGuidelineFromList}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}assessment-guideline-update",
+									"host": [
+										"{{base_url}}assessment-guideline-update"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "assessment-guideline-list-after-update",
 							"event": [
 								{
@@ -2648,18 +4038,6 @@
 											"// Parse the response body\r",
 											"let responseBody = pm.response.json();\r",
 											"\r",
-											"// Extract data from the response\r",
-											"let responseassessmentGuideline = responseBody.data[0].assessmentGuideline;\r",
-											"\r",
-											"\r",
-											"// Retrieve the stored variables\r",
-											"let storedassessmentGuideline = pm.variables.get(\"assessmentGuideline\"); // Get from local variable scope\r",
-											"\r",
-											"\r",
-											"// Verify assessmentGuideline\r",
-											"pm.test(\"assessmentGuideline is correct\", function () {\r",
-											"    pm.expect(responseassessmentGuideline).to.eql(storedassessmentGuideline);\r",
-											"});\r",
 											"\r",
 											"// Define the expected fields in the main response\r",
 											"const expectedFields = [\"errors\", \"message\", \"statusCode\", \"success\"];\r",
@@ -2843,6 +4221,84 @@
 							"response": []
 						},
 						{
+							"name": "countries-add-already-exists",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Test script\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains errors\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.errors[0]).to.eql(\"This country already exists.\");\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"Success is false\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.success).to.be.false;\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"response time\",function()\r",
+											"{\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+											"});\r",
+											"\r",
+											"\r",
+											"// Define the expected fields\r",
+											"const expectedFields = [\"errors\", \"message\", \"statusCode\", \"success\"];\r",
+											"\r",
+											"// Get the actual response\r",
+											"const actualResponse = pm.response.json();"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n \"countryName\":\"{{countryName1}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}country-add",
+									"host": [
+										"{{base_url}}country-add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "countries-list-after-add",
 							"event": [
 								{
@@ -2948,12 +4404,138 @@
 							"response": []
 						},
 						{
+							"name": "countries-list-after-add-isActive",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment\r",
+											"let isActive = pm.environment.get(\"isActive\");\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"     // Check if the data array is not empty\r",
+											"    if (response.data.length > 0) {\r",
+											"        // Verify that the first element in the data array has the correct isActive value\r",
+											"        pm.test(\"First data element should have isActive value matching the request\", () => {\r",
+											"            pm.expect(response.data[0]).to.have.property('isActive', isActive);\r",
+											"        });\r",
+											"    }\r",
+											"}\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateNoDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should contain an empty data array\", () => {\r",
+											"        pm.expect(response.data).to.be.an('array').that.is.empty;\r",
+											"    });\r",
+											"\r",
+											"}\r",
+											"\r",
+											"// Parse the response\r",
+											"let response = pm.response.json();\r",
+											"\r",
+											"// Check if the isActive value is 0 or 1\r",
+											"if ([0, 1].includes(isActive)) {\r",
+											"    pm.test(`isActive is '${isActive}', validate response accordingly`, () => {\r",
+											"        if (response.data && response.data.length > 0) {\r",
+											"            validateDataIsPresent(response);\r",
+											"        } else {\r",
+											"            validateNoDataIsPresent(response);\r",
+											"        }\r",
+											"    });\r",
+											"} else {\r",
+											"    pm.test(\"Unexpected isActive value\", () => {\r",
+											"        pm.expect.fail(`Received unexpected isActive value: ${isActive}`);\r",
+											"    });\r",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment, or initialize it to 0\r",
+											"let isActive = pm.environment.get(\"isActive\") || 0;\r",
+											"\r",
+											"// Toggle isActive between 0 and 1\r",
+											"isActive = (isActive === 1) ? 0 : 1;\r",
+											"\r",
+											"// Set the updated isActive back to the environment\r",
+											"pm.environment.set(\"isActive\", isActive);\r",
+											"\r",
+											"// Set the isActive in the request body\r",
+											"let requestData = {\r",
+											"    \"isActive\": isActive\r",
+											"};\r",
+											"\r",
+											"// Update the request body with the new isActive value\r",
+											"pm.request.body.raw = JSON.stringify(requestData);\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "// {\r\n//  \"countryId\": {{countryId}}\r\n// }\r\n\r\n// {\r\n\r\n// }\r\n\r\n{\r\n    \"isActive\":{{isActive}}\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}country-data",
+									"host": [
+										"{{base_url}}country-data"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "countries-list-after-add-full",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
+											"pm.test(\"countryName\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.environment.set(\"countryNameFromList\", jsonData.data[0].countryName);\r",
+											"});\r",
+											"\r",
 											"pm.test(\"Verify 'message' is 'Country fetched successfully'\", function () {\r",
 											"    var jsonData = pm.response.json();\r",
 											"    pm.expect(jsonData.message).to.eql(\"Country fetched successfully\");\r",
@@ -3207,22 +4789,7 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"// Function to generate a random string of given length\r",
-											"function generateRandomString(length) {\r",
-											"    let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';\r",
-											"    let result = '';\r",
-											"    for (let i = 0; i < length; i++) {\r",
-											"        result += characters.charAt(Math.floor(Math.random() * characters.length));\r",
-											"    }\r",
-											"    return result;\r",
-											"}\r",
-											"\r",
-											"\r",
-											"// Generate random values\r",
-											"let randomcountryName = generateRandomString(6);\r",
-											"\r",
-											"// Set variables with generated values\r",
-											"pm.variables.set(\"countryName\", randomcountryName);"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -3488,6 +5055,84 @@
 							"response": []
 						},
 						{
+							"name": "state-add-already-exists",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Test script\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains errors\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.errors[0]).to.eql(\"state already exists.\");\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"Success is false\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.success).to.be.false;\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"response time\",function()\r",
+											"{\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+											"});\r",
+											"\r",
+											"\r",
+											"// Define the expected fields\r",
+											"const expectedFields = [\"errors\", \"message\", \"statusCode\", \"success\"];\r",
+											"\r",
+											"// Get the actual response\r",
+											"const actualResponse = pm.response.json();"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"countryId\": {{countryId}},\r\n    \"stateName\": \"{{stateName1}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}state-add",
+									"host": [
+										"{{base_url}}state-add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "state-data-after-add",
 							"event": [
 								{
@@ -3611,12 +5256,138 @@
 							"response": []
 						},
 						{
+							"name": "state-data-after-add-isActive",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment\r",
+											"let isActive = pm.environment.get(\"isActive\");\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"     // Check if the data array is not empty\r",
+											"    if (response.data.length > 0) {\r",
+											"        // Verify that the first element in the data array has the correct isActive value\r",
+											"        pm.test(\"First data element should have isActive value matching the request\", () => {\r",
+											"            pm.expect(response.data[0]).to.have.property('isActive', isActive);\r",
+											"        });\r",
+											"    }\r",
+											"}\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateNoDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should contain an empty data array\", () => {\r",
+											"        pm.expect(response.data).to.be.an('array').that.is.empty;\r",
+											"    });\r",
+											"\r",
+											"}\r",
+											"\r",
+											"// Parse the response\r",
+											"let response = pm.response.json();\r",
+											"\r",
+											"// Check if the isActive value is 0 or 1\r",
+											"if ([0, 1].includes(isActive)) {\r",
+											"    pm.test(`isActive is '${isActive}', validate response accordingly`, () => {\r",
+											"        if (response.data && response.data.length > 0) {\r",
+											"            validateDataIsPresent(response);\r",
+											"        } else {\r",
+											"            validateNoDataIsPresent(response);\r",
+											"        }\r",
+											"    });\r",
+											"} else {\r",
+											"    pm.test(\"Unexpected isActive value\", () => {\r",
+											"        pm.expect.fail(`Received unexpected isActive value: ${isActive}`);\r",
+											"    });\r",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment, or initialize it to 0\r",
+											"let isActive = pm.environment.get(\"isActive\") || 0;\r",
+											"\r",
+											"// Toggle isActive between 0 and 1\r",
+											"isActive = (isActive === 1) ? 0 : 1;\r",
+											"\r",
+											"// Set the updated isActive back to the environment\r",
+											"pm.environment.set(\"isActive\", isActive);\r",
+											"\r",
+											"// Set the isActive in the request body\r",
+											"let requestData = {\r",
+											"    \"isActive\": isActive\r",
+											"};\r",
+											"\r",
+											"// Update the request body with the new isActive value\r",
+											"pm.request.body.raw = JSON.stringify(requestData);\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "// {\r\n//         \"stateId\": {{stateId}}\r\n// }\r\n\r\n// {\r\n\r\n// }\r\n\r\n{\r\n    \"isActive\":{{isActive}}\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}state-data",
+									"host": [
+										"{{base_url}}state-data"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "state-data-after-add-full",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
+											"pm.test(\"stateName\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.environment.set(\"stateNameFromList\", jsonData.data[0].stateName);\r",
+											"});\r",
+											"\r",
 											"pm.test(\"Verify 'message' is 'State data fetched successfully'\", function () {\r",
 											"    var jsonData = pm.response.json();\r",
 											"    pm.expect(jsonData.message).to.eql(\"State data fetched successfully\");\r",
@@ -3819,6 +5590,91 @@
 								"body": {
 									"mode": "raw",
 									"raw": "{\r\n    \"stateId\":{{stateId}},    \r\n    \"countryId\": {{countryId}},\r\n    \"stateName\": \"{{stateName}}\"\r\n}\r\n\r\n// {\r\n//     \"stateId\":6,    \r\n//     \"isActive\":1\r\n// }\r\n\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}state-update",
+									"host": [
+										"{{base_url}}state-update"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "state-update-already-exists",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Test script\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains errors\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.errors[0]).to.eql(\"State name already exists.\");\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"Success is false\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.success).to.be.false;\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"response time\",function()\r",
+											"{\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+											"});\r",
+											"\r",
+											"\r",
+											"// Define the expected fields\r",
+											"const expectedFields = [\"errors\", \"message\", \"statusCode\", \"success\"];\r",
+											"\r",
+											"// Get the actual response\r",
+											"const actualResponse = pm.response.json();\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"stateId\":{{stateId}},    \r\n    \"countryId\": {{countryId}},\r\n    \"stateName\": \"{{stateNameFromList}}\"\r\n}\r\n\r\n// {\r\n//     \"stateId\":6,    \r\n//     \"isActive\":1\r\n// }\r\n\r\n",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -4086,6 +5942,84 @@
 							"response": []
 						},
 						{
+							"name": "cities-add-already-exists",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Test script\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains errors\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.errors[0]).to.eql(\"City already exists.\");\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"Success is false\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.success).to.be.false;\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"response time\",function()\r",
+											"{\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+											"});\r",
+											"\r",
+											"\r",
+											"// Define the expected fields\r",
+											"const expectedFields = [\"errors\", \"message\", \"statusCode\", \"success\"];\r",
+											"\r",
+											"// Get the actual response\r",
+											"const actualResponse = pm.response.json();"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"countryId\": {{countryId}},\r\n    \"stateId\": {{stateId}},\r\n    \"city\": \"{{city1}}\",\r\n    \"soil\": \"{{soil1}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}city-add",
+									"host": [
+										"{{base_url}}city-add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "cities-list-after-add",
 							"event": [
 								{
@@ -4237,12 +6171,138 @@
 							"response": []
 						},
 						{
+							"name": "cities-list-after-add-isActive",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment\r",
+											"let isActive = pm.environment.get(\"isActive\");\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"     // Check if the data array is not empty\r",
+											"    if (response.data.length > 0) {\r",
+											"        // Verify that the first element in the data array has the correct isActive value\r",
+											"        pm.test(\"First data element should have isActive value matching the request\", () => {\r",
+											"            pm.expect(response.data[0]).to.have.property('isActive', isActive);\r",
+											"        });\r",
+											"    }\r",
+											"}\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateNoDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should contain an empty data array\", () => {\r",
+											"        pm.expect(response.data).to.be.an('array').that.is.empty;\r",
+											"    });\r",
+											"\r",
+											"}\r",
+											"\r",
+											"// Parse the response\r",
+											"let response = pm.response.json();\r",
+											"\r",
+											"// Check if the isActive value is 0 or 1\r",
+											"if ([0, 1].includes(isActive)) {\r",
+											"    pm.test(`isActive is '${isActive}', validate response accordingly`, () => {\r",
+											"        if (response.data && response.data.length > 0) {\r",
+											"            validateDataIsPresent(response);\r",
+											"        } else {\r",
+											"            validateNoDataIsPresent(response);\r",
+											"        }\r",
+											"    });\r",
+											"} else {\r",
+											"    pm.test(\"Unexpected isActive value\", () => {\r",
+											"        pm.expect.fail(`Received unexpected isActive value: ${isActive}`);\r",
+											"    });\r",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment, or initialize it to 0\r",
+											"let isActive = pm.environment.get(\"isActive\") || 0;\r",
+											"\r",
+											"// Toggle isActive between 0 and 1\r",
+											"isActive = (isActive === 1) ? 0 : 1;\r",
+											"\r",
+											"// Set the updated isActive back to the environment\r",
+											"pm.environment.set(\"isActive\", isActive);\r",
+											"\r",
+											"// Set the isActive in the request body\r",
+											"let requestData = {\r",
+											"    \"isActive\": isActive\r",
+											"};\r",
+											"\r",
+											"// Update the request body with the new isActive value\r",
+											"pm.request.body.raw = JSON.stringify(requestData);\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "// {\r\n//     \"cityId\": {{cityId}}\r\n// }\r\n\r\n// {\r\n  \r\n// }\r\n\r\n{\r\n    \"isActive\":{{isActive}}\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}city-data",
+									"host": [
+										"{{base_url}}city-data"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "cities-list-after-add-full",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
+											"pm.test(\"cityName\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.environment.set(\"cityNameFromList\", jsonData.data[0].cityName);\r",
+											"});\r",
+											"\r",
 											"pm.test(\"Verify 'message' is 'City data fetched successfully'\", function () {\r",
 											"    var jsonData = pm.response.json();\r",
 											"    pm.expect(jsonData.message).to.eql(\"City data fetched successfully\");\r",
@@ -4468,6 +6528,91 @@
 								"body": {
 									"mode": "raw",
 									"raw": "{\r\n    \"cityId\":{{cityId}},    \r\n    \"countryId\": {{countryId}},\r\n    \"stateId\": {{stateId}},\r\n    \"city\": \"{{city}}\",\r\n    \"soil\": \"{{soil}}\"\r\n}\r\n\r\n// {\r\n//     \"cityId\":100008,    \r\n//     \"isActive\": 1\r\n// }\r\n\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}city-update",
+									"host": [
+										"{{base_url}}city-update"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "cities-update-already-exists",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Test script\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains errors\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.errors[0]).to.eql(\"The provided city name already exists.\");\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"Success is false\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.success).to.be.false;\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"response time\",function()\r",
+											"{\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+											"});\r",
+											"\r",
+											"\r",
+											"// Define the expected fields\r",
+											"const expectedFields = [\"errors\", \"message\", \"statusCode\", \"success\"];\r",
+											"\r",
+											"// Get the actual response\r",
+											"const actualResponse = pm.response.json();\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"cityId\":{{cityId}},    \r\n    \"countryId\": {{countryId}},\r\n    \"stateId\": {{stateId}},\r\n    \"city\": \"{{cityNameFromList}}\",\r\n    \"soil\": \"{{soil}}\"\r\n}\r\n\r\n// {\r\n//     \"cityId\":100008,    \r\n//     \"isActive\": 1\r\n// }\r\n\r\n",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -4888,6 +7033,84 @@
 							"response": []
 						},
 						{
+							"name": "microzonation-add-already-exists",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Test script\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains errors\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.errors[0]).to.eql(\"The same combination of Surveyor Objective and assessment guideline already exists.\");\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"Success is false\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.success).to.be.false;\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"response time\",function()\r",
+											"{\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+											"});\r",
+											"\r",
+											"\r",
+											"// Define the expected fields\r",
+											"const expectedFields = [\"errors\", \"message\", \"statusCode\", \"success\"];\r",
+											"\r",
+											"// Get the actual response\r",
+											"const actualResponse = pm.response.json();"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"assessmentGuidelineId\": {{assessmentGudlineId}}, \r\n    \"surveyorObjective\": [\r\n        {\r\n            \"surveyorObjectiveId\": {{surveyObjectiveId}}, \r\n            \"level\":\"{{levelAdd}}\"\r\n        }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}microzonation-add",
+									"host": [
+										"{{base_url}}microzonation-add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "microzonation-list-after-add",
 							"event": [
 								{
@@ -5006,12 +7229,139 @@
 							"response": []
 						},
 						{
+							"name": "microzonation-list-after-add-isActive",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment\r",
+											"let isActive = pm.environment.get(\"isActive\");\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.eql(\"true\");\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"     // Check if the data array is not empty\r",
+											"    if (response.data.length > 0) {\r",
+											"        // Verify that the first element in the data array has the correct isActive value\r",
+											"        pm.test(\"First data element should have isActive value matching the request\", () => {\r",
+											"            pm.expect(response.data[0]).to.have.property('isActive', isActive);\r",
+											"        });\r",
+											"    }\r",
+											"}\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateNoDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should contain an empty data array\", () => {\r",
+											"        pm.expect(response.data).to.be.an('array').that.is.empty;\r",
+											"    });\r",
+											"\r",
+											"}\r",
+											"\r",
+											"// Parse the response\r",
+											"let response = pm.response.json();\r",
+											"\r",
+											"// Check if the isActive value is 0 or 1\r",
+											"if ([0, 1].includes(isActive)) {\r",
+											"    pm.test(`isActive is '${isActive}', validate response accordingly`, () => {\r",
+											"        if (response.data && response.data.length > 0) {\r",
+											"            validateDataIsPresent(response);\r",
+											"        } else {\r",
+											"            validateNoDataIsPresent(response);\r",
+											"        }\r",
+											"    });\r",
+											"} else {\r",
+											"    pm.test(\"Unexpected isActive value\", () => {\r",
+											"        pm.expect.fail(`Received unexpected isActive value: ${isActive}`);\r",
+											"    });\r",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment, or initialize it to 0\r",
+											"let isActive = pm.environment.get(\"isActive\") || 0;\r",
+											"\r",
+											"// Toggle isActive between 0 and 1\r",
+											"isActive = (isActive === 1) ? 0 : 1;\r",
+											"\r",
+											"// Set the updated isActive back to the environment\r",
+											"pm.environment.set(\"isActive\", isActive);\r",
+											"\r",
+											"// Set the isActive in the request body\r",
+											"let requestData = {\r",
+											"    \"isActive\": isActive\r",
+											"};\r",
+											"\r",
+											"// Update the request body with the new isActive value\r",
+											"pm.request.body.raw = JSON.stringify(requestData);\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "// {\r\n\r\n// }\r\n\r\n{\r\n \"isActive\": {{isActive}}\r\n}\r\n\r\n// {\r\n//   \"assessmentGuidelineId\":{{assessmentGudlineId}}\r\n// }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}microzonation-data",
+									"host": [
+										"{{base_url}}microzonation-data"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "microzonation-list-after-add-full",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
+											"pm.test(\"level\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.environment.set(\"levelFromList\", jsonData.data[0].surveyObjective[0].value[0].level);\r",
+											"});\r",
+											"\r",
+											"\r",
 											"pm.test(\"Verify message, success\", function () {\r",
 											"    var jsonData = pm.response.json();\r",
 											"\r",
@@ -5455,6 +7805,84 @@
 							"response": []
 						},
 						{
+							"name": "scale-mapping-add-already-exists",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Test script\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains errors\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.errors[0]).to.eql(\"This scale mapping already exists.\");\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"Success is false\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.success).to.be.false;\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"response time\",function()\r",
+											"{\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+											"});\r",
+											"\r",
+											"\r",
+											"// Define the expected fields\r",
+											"const expectedFields = [\"errors\", \"message\", \"statusCode\", \"success\"];\r",
+											"\r",
+											"// Get the actual response\r",
+											"const actualResponse = pm.response.json();"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"countryId\": {{countryId}},\r\n    \"stateId\": {{stateId}},\r\n    \"cityId\": {{cityId}},\r\n    \"surveyorObjectiveId\": {{surveyObjectiveId}},\r\n    \"assessmentGuidelineId\": {{assessmentGudlineId}},\r\n    \"microzonationId\": {{microzonationId}}\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}scale-mapping-add",
+									"host": [
+										"{{base_url}}scale-mapping-add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "scale-mapping-list",
 							"event": [
 								{
@@ -5587,6 +8015,127 @@
 								"body": {
 									"mode": "raw",
 									"raw": "{\r\n    \"scaleMappingId\": {{scaleMappingId}}\r\n}\r\n\r\n// {\r\n\r\n// }\r\n\r\n// {\r\n//     \"isActive\":3\r\n// }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}scale-mapping-data",
+									"host": [
+										"{{base_url}}scale-mapping-data"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "scale-mapping-list-isActive",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment\r",
+											"let isActive = pm.environment.get(\"isActive\");\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"     // Check if the data array is not empty\r",
+											"    if (response.data.length > 0) {\r",
+											"        // Verify that the first element in the data array has the correct isActive value\r",
+											"        pm.test(\"First data element should have isActive value matching the request\", () => {\r",
+											"            pm.expect(response.data[0]).to.have.property('isActive', isActive);\r",
+											"        });\r",
+											"    }\r",
+											"}\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateNoDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should contain an empty data array\", () => {\r",
+											"        pm.expect(response.data).to.be.an('array').that.is.empty;\r",
+											"    });\r",
+											"\r",
+											"}\r",
+											"\r",
+											"// Parse the response\r",
+											"let response = pm.response.json();\r",
+											"\r",
+											"// Check if the isActive value is 0 or 1\r",
+											"if ([0, 1].includes(isActive)) {\r",
+											"    pm.test(`isActive is '${isActive}', validate response accordingly`, () => {\r",
+											"        if (response.data && response.data.length > 0) {\r",
+											"            validateDataIsPresent(response);\r",
+											"        } else {\r",
+											"            validateNoDataIsPresent(response);\r",
+											"        }\r",
+											"    });\r",
+											"} else {\r",
+											"    pm.test(\"Unexpected isActive value\", () => {\r",
+											"        pm.expect.fail(`Received unexpected isActive value: ${isActive}`);\r",
+											"    });\r",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment, or initialize it to 0\r",
+											"let isActive = pm.environment.get(\"isActive\") || 0;\r",
+											"\r",
+											"// Toggle isActive between 0 and 1\r",
+											"isActive = (isActive === 1) ? 0 : 1;\r",
+											"\r",
+											"// Set the updated isActive back to the environment\r",
+											"pm.environment.set(\"isActive\", isActive);\r",
+											"\r",
+											"// Set the isActive in the request body\r",
+											"let requestData = {\r",
+											"    \"isActive\": isActive\r",
+											"};\r",
+											"\r",
+											"// Update the request body with the new isActive value\r",
+											"pm.request.body.raw = JSON.stringify(requestData);\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "// {\r\n//     \"scaleMappingId\": {{scaleMappingId}}\r\n// }\r\n\r\n// {\r\n\r\n// }\r\n\r\n{\r\n    \"isActive\":{{isActive}}\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -5762,6 +8311,7 @@
 											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"\r",
+											"\r",
 											"pm.test(\"Response body contains success message\", function () {\r",
 											"    var jsonData = pm.response.json();\r",
 											"    pm.expect(jsonData.message).to.eql(\"Scale mapping updated successfully\");\r",
@@ -5773,31 +8323,96 @@
 											"    pm.expect(jsonData.success).to.be.true;\r",
 											"});\r",
 											"\r",
-											"pm.test(\"Validation Status code is 200\", function()\r",
-											"{\r",
-											"    pm.response.to.have.status(200);\r",
-											"});\r",
 											"\r",
 											"pm.test(\"response time\",function()\r",
 											"{\r",
 											"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
 											"});\r",
 											"\r",
+											"\r",
 											"// Define the expected fields\r",
 											"const expectedFields = [\"data\", \"errors\", \"message\", \"statusCode\", \"success\"];\r",
 											"\r",
 											"// Get the actual response\r",
-											"const actualResponse = pm.response.json();\r",
+											"const actualResponse = pm.response.json();"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"scaleMappingId\":{{scaleMappingId}},\r\n    \"countryId\": 1559032693, \r\n    \"stateId\": {{stateUpdate}},\r\n    \"cityId\": {{cityUpdate}},\r\n    \"surveyorObjectiveId\": {{surveyObjectiveId}}, \r\n    \"assessmentGuidelineId\": {{assessmentGudlineId}},\r\n    \"microzonationId\": {{microzonationId}} \r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}scale-mapping-update",
+									"host": [
+										"{{base_url}}scale-mapping-update"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "scale-mapping-update-already-exists",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Test script\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
 											"\r",
-											"// Verify that each expected field is present in the response\r",
-											"expectedFields.forEach(field => {\r",
-											"    pm.test(`Field ${field} is present in the response`, function () {\r",
-											"        pm.expect(actualResponse).to.have.property(field);\r",
-											"    });\r",
+											"pm.test(\"Response body contains message\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.errors[0]).to.eql(\"Combination already exists. Cannot update.\");\r",
 											"});\r",
 											"\r",
 											"\r",
-											""
+											"pm.test(\"Success is false\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.success).to.be.false;\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"response time\",function()\r",
+											"{\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+											"});\r",
+											"\r",
+											"\r",
+											"// Define the expected fields\r",
+											"const expectedFields = [\"errors\", \"message\", \"statusCode\", \"success\"];\r",
+											"\r",
+											"// Get the actual response\r",
+											"const actualResponse = pm.response.json();"
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -6875,6 +9490,127 @@
 							"response": []
 						},
 						{
+							"name": "image processing list-after-isActive",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment\r",
+											"let isActive = pm.environment.get(\"isActive\");\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"     // Check if the data array is not empty\r",
+											"    if (response.data.length > 0) {\r",
+											"        // Verify that the first element in the data array has the correct isActive value\r",
+											"        pm.test(\"First data element should have isActive value matching the request\", () => {\r",
+											"            pm.expect(response.data[0]).to.have.property('isActive', isActive);\r",
+											"        });\r",
+											"    }\r",
+											"}\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateNoDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should contain an empty data array\", () => {\r",
+											"        pm.expect(response.data).to.be.an('array').that.is.empty;\r",
+											"    });\r",
+											"\r",
+											"}\r",
+											"\r",
+											"// Parse the response\r",
+											"let response = pm.response.json();\r",
+											"\r",
+											"// Check if the isActive value is 0 or 1\r",
+											"if ([0, 1].includes(isActive)) {\r",
+											"    pm.test(`isActive is '${isActive}', validate response accordingly`, () => {\r",
+											"        if (response.data && response.data.length > 0) {\r",
+											"            validateDataIsPresent(response);\r",
+											"        } else {\r",
+											"            validateNoDataIsPresent(response);\r",
+											"        }\r",
+											"    });\r",
+											"} else {\r",
+											"    pm.test(\"Unexpected isActive value\", () => {\r",
+											"        pm.expect.fail(`Received unexpected isActive value: ${isActive}`);\r",
+											"    });\r",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment, or initialize it to 0\r",
+											"let isActive = pm.environment.get(\"isActive\") || 0;\r",
+											"\r",
+											"// Toggle isActive between 0 and 1\r",
+											"isActive = (isActive === 1) ? 0 : 1;\r",
+											"\r",
+											"// Set the updated isActive back to the environment\r",
+											"pm.environment.set(\"isActive\", isActive);\r",
+											"\r",
+											"// Set the isActive in the request body\r",
+											"let requestData = {\r",
+											"    \"isActive\": isActive\r",
+											"};\r",
+											"\r",
+											"// Update the request body with the new isActive value\r",
+											"pm.request.body.raw = JSON.stringify(requestData);\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "// { \r\n// \t\"imageProcessingId\": {{imageProcessingId}}\r\n// }\r\n\r\n// {\r\n\r\n// }\r\n\r\n{\r\n    \"isActive\":{{isActive}}\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}image-processing-data",
+									"host": [
+										"{{base_url}}image-processing-data"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "image processing list-after-add-full",
 							"event": [
 								{
@@ -7440,6 +10176,127 @@
 							"response": []
 						},
 						{
+							"name": "notice-data-after-add-isActive",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment\r",
+											"let isActive = pm.environment.get(\"isActive\");\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"     // Check if the data array is not empty\r",
+											"    if (response.data.length > 0) {\r",
+											"        // Verify that the first element in the data array has the correct isActive value\r",
+											"        pm.test(\"First data element should have isActive value matching the request\", () => {\r",
+											"            pm.expect(response.data[0]).to.have.property('isActive', isActive);\r",
+											"        });\r",
+											"    }\r",
+											"}\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateNoDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should contain an empty data array\", () => {\r",
+											"        pm.expect(response.data).to.be.an('array').that.is.empty;\r",
+											"    });\r",
+											"\r",
+											"}\r",
+											"\r",
+											"// Parse the response\r",
+											"let response = pm.response.json();\r",
+											"\r",
+											"// Check if the isActive value is 0 or 1\r",
+											"if ([0, 1].includes(isActive)) {\r",
+											"    pm.test(`isActive is '${isActive}', validate response accordingly`, () => {\r",
+											"        if (response.data && response.data.length > 0) {\r",
+											"            validateDataIsPresent(response);\r",
+											"        } else {\r",
+											"            validateNoDataIsPresent(response);\r",
+											"        }\r",
+											"    });\r",
+											"} else {\r",
+											"    pm.test(\"Unexpected isActive value\", () => {\r",
+											"        pm.expect.fail(`Received unexpected isActive value: ${isActive}`);\r",
+											"    });\r",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment, or initialize it to 0\r",
+											"let isActive = pm.environment.get(\"isActive\") || 0;\r",
+											"\r",
+											"// Toggle isActive between 0 and 1\r",
+											"isActive = (isActive === 1) ? 0 : 1;\r",
+											"\r",
+											"// Set the updated isActive back to the environment\r",
+											"pm.environment.set(\"isActive\", isActive);\r",
+											"\r",
+											"// Set the isActive in the request body\r",
+											"let requestData = {\r",
+											"    \"isActive\": isActive\r",
+											"};\r",
+											"\r",
+											"// Update the request body with the new isActive value\r",
+											"pm.request.body.raw = JSON.stringify(requestData);\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"isActive\": {{isActive}}\r\n}\r\n\r\n// {\r\n\r\n// }\r\n\r\n// {\r\n//   \"noticeId\": {{noticeId}}\r\n// }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}notice-data",
+									"host": [
+										"{{base_url}}notice-data"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "notice-data-after-add-full",
 							"event": [
 								{
@@ -7870,6 +10727,84 @@
 							"response": []
 						},
 						{
+							"name": "structure-add-already-exists",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Test script\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains errors\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.errors[0]).to.eql(\"This structure already exists.\");\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"Success is false\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.success).to.be.false;\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"response time\",function()\r",
+											"{\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+											"});\r",
+											"\r",
+											"\r",
+											"// Define the expected fields\r",
+											"const expectedFields = [\"errors\", \"message\", \"statusCode\", \"success\"];\r",
+											"\r",
+											"// Get the actual response\r",
+											"const actualResponse = pm.response.json();"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"structure\":\"{{structure1}}\",\r\n    \"image\":\"46a574ea-e4c7-4492-8c3f-75ca400aef31.jpg\"\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}structure-add",
+									"host": [
+										"{{base_url}}structure-add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "structure-list-after-add",
 							"event": [
 								{
@@ -7972,12 +10907,139 @@
 							"response": []
 						},
 						{
+							"name": "structure-list-after-add-isActive",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment\r",
+											"let isActive = pm.environment.get(\"isActive\");\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"     // Check if the data array is not empty\r",
+											"    if (response.data.length > 0) {\r",
+											"        // Verify that the first element in the data array has the correct isActive value\r",
+											"        pm.test(\"First data element should have isActive value matching the request\", () => {\r",
+											"            pm.expect(response.data[0]).to.have.property('isActive', isActive);\r",
+											"        });\r",
+											"    }\r",
+											"}\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateNoDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should contain an empty data array\", () => {\r",
+											"        pm.expect(response.data).to.be.an('array').that.is.empty;\r",
+											"    });\r",
+											"\r",
+											"}\r",
+											"\r",
+											"// Parse the response\r",
+											"let response = pm.response.json();\r",
+											"\r",
+											"// Check if the isActive value is 0 or 1\r",
+											"if ([0, 1].includes(isActive)) {\r",
+											"    pm.test(`isActive is '${isActive}', validate response accordingly`, () => {\r",
+											"        if (response.data && response.data.length > 0) {\r",
+											"            validateDataIsPresent(response);\r",
+											"        } else {\r",
+											"            validateNoDataIsPresent(response);\r",
+											"        }\r",
+											"    });\r",
+											"} else {\r",
+											"    pm.test(\"Unexpected isActive value\", () => {\r",
+											"        pm.expect.fail(`Received unexpected isActive value: ${isActive}`);\r",
+											"    });\r",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment, or initialize it to 0\r",
+											"let isActive = pm.environment.get(\"isActive\") || 0;\r",
+											"\r",
+											"// Toggle isActive between 0 and 1\r",
+											"isActive = (isActive === 1) ? 0 : 1;\r",
+											"\r",
+											"// Set the updated isActive back to the environment\r",
+											"pm.environment.set(\"isActive\", isActive);\r",
+											"\r",
+											"// Set the isActive in the request body\r",
+											"let requestData = {\r",
+											"    \"isActive\": isActive\r",
+											"};\r",
+											"\r",
+											"// Update the request body with the new isActive value\r",
+											"pm.request.body.raw = JSON.stringify(requestData);\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "// {\r\n//   \"structureId\": {{structureId}}\r\n// }\r\n\r\n// {\r\n\r\n// }\r\n\r\n{\r\n    \"isActive\":{{isActive}}\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}structure-data",
+									"host": [
+										"{{base_url}}structure-data"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "structure-list-after-add-full",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
+											"pm.test(\"structureName\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.environment.set(\"structureNameFromList\", jsonData.data[0].structureName);\r",
+											"});\r",
+											"\r",
+											"\r",
 											"pm.test(\"Verify 'message' is 'Structure data fetched successfully'\", function () {\r",
 											"    var jsonData = pm.response.json();\r",
 											"    pm.expect(jsonData.message).to.eql(\"Structure data fetched successfully\");\r",
@@ -8155,6 +11217,84 @@
 								"body": {
 									"mode": "raw",
 									"raw": "{\r\n    \"structureId\":{{structureId}},\r\n    \"structure\":\"{{structure}}\",\r\n    \"image\":\"aac64967-6c44-496b-b33d-6fd8969cecf5.png\"\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}structure-update",
+									"host": [
+										"{{base_url}}structure-update"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "structure-update-already-exists",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Test script\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains errors\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.errors[0]).to.eql(\"Structure already exists.\");\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"Success is false\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.success).to.be.false;\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"response time\",function()\r",
+											"{\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+											"});\r",
+											"\r",
+											"\r",
+											"// Define the expected fields\r",
+											"const expectedFields = [\"errors\", \"message\", \"statusCode\", \"success\"];\r",
+											"\r",
+											"// Get the actual response\r",
+											"const actualResponse = pm.response.json();"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"structureId\":{{structureId}},\r\n    \"structure\":\"{{structureNameFromList}}\",\r\n    \"image\":\"aac64967-6c44-496b-b33d-6fd8969cecf5.png\"\r\n}\r\n",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -10013,7 +13153,92 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"question\": \"{{question}}\",\r\n    \"serialNumber\": {{serialNumber}},\r\n    \"answerPattern\": \"{{answerPattern}}\",\r\n    \"questionSegment\": \"1558700990\",\r\n    \"surveyObjectiveId\": [{{surveyObjectiveId}}],\r\n    \"assessmentGuidelineId\": [{{assessmentGudlineId}}],\r\n    \"structureTypeId\": [{{structureId}}],\r\n    \"surveyorRankId\": [{{surveyorRankId}}],\r\n    \"isRequired\":0, // or 1\r\n    \"answers\": {{answers}},\r\n    \"helps\": {{helps}}\r\n}\r\n",
+									"raw": "{\r\n    \"question\": \"{{question}}\",\r\n    \"serialNumber\": {{serialNumber}},\r\n    \"answerPattern\": \"{{answerPattern}}\",\r\n    \"questionSegment\": \"1558700990\",\r\n    \"surveyObjectiveId\": [{{surveyObjectiveId}}],\r\n    \"assessmentGuidelineId\": [{{assessmentGudlineId}}],\r\n    \"structureTypeId\": [{{structureId}}],\r\n    \"surveyorRankId\": [{{surveyorRankId}}],\r\n    \"isRequired\":1, // or 1\r\n    \"answers\": {{answers}},\r\n    \"helps\": {{helps}}\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}question-add",
+									"host": [
+										"{{base_url}}question-add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "questions-add-already-exists",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Test script\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains errors\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.errors[0]).to.eql(\"This question already exists.\");\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"Success is false\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.success).to.be.false;\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.test(\"response time\",function()\r",
+											"{\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+											"});\r",
+											"\r",
+											"\r",
+											"// Define the expected fields\r",
+											"const expectedFields = [\"errors\", \"message\", \"statusCode\", \"success\"];\r",
+											"\r",
+											"// Get the actual response\r",
+											"const actualResponse = pm.response.json();\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"question\": \"{{questionAdd}}\",\r\n    \"serialNumber\": {{serialNumberAdd}},\r\n    \"answerPattern\": \"{{answerPatternAdd}}\",\r\n    \"questionSegment\": \"1558700990\",\r\n    \"surveyObjectiveId\": [{{surveyObjectiveId}}],\r\n    \"assessmentGuidelineId\": [{{assessmentGudlineId}}],\r\n    \"structureTypeId\": [{{structureId}}],\r\n    \"surveyorRankId\": [{{surveyorRankId}}],\r\n    \"isRequired\":0, // or 1\r\n    \"answers\": {{answers}},\r\n    \"helps\": {{helps}}\r\n}\r\n",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -10218,7 +13443,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n        \"questionId\": {{questionId}}\r\n}\r\n\r\n// {\r\n\r\n// }\r\n\r\n// {\r\n//     \"isActive\":1\r\n// }",
+									"raw": "{\r\n        \"questionId\": {{questionId}}\r\n}\r\n\r\n// {\r\n\r\n// }\r\n\r\n// {\r\n//     \"isActive\":3\r\n// }",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -10235,7 +13460,128 @@
 							"response": []
 						},
 						{
-							"name": "questions-list-after-add",
+							"name": "questions-list-after-add-isActive",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment\r",
+											"let isActive = pm.environment.get(\"isActive\");\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"     // Check if the data array is not empty\r",
+											"    if (response.data.length > 0) {\r",
+											"        // Verify that the first element in the data array has the correct isActive value\r",
+											"        pm.test(\"First data element should have isActive value matching the request\", () => {\r",
+											"            pm.expect(response.data[0]).to.have.property('isActive', isActive);\r",
+											"        });\r",
+											"    }\r",
+											"}\r",
+											"\r",
+											"// Define the expected response \r",
+											"function validateNoDataIsPresent(response) {\r",
+											"    pm.test(\"Response should have success set to true\", () => {\r",
+											"        pm.expect(response.success).to.be.true;\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should have statusCode 200\", () => {\r",
+											"        pm.expect(response.statusCode).to.eql(200);\r",
+											"    });\r",
+											"\r",
+											"    pm.test(\"Response should contain an empty data array\", () => {\r",
+											"        pm.expect(response.data).to.be.an('array').that.is.empty;\r",
+											"    });\r",
+											"\r",
+											"}\r",
+											"\r",
+											"// Parse the response\r",
+											"let response = pm.response.json();\r",
+											"\r",
+											"// Check if the isActive value is 0 or 1\r",
+											"if ([0, 1].includes(isActive)) {\r",
+											"    pm.test(`isActive is '${isActive}', validate response accordingly`, () => {\r",
+											"        if (response.data && response.data.length > 0) {\r",
+											"            validateDataIsPresent(response);\r",
+											"        } else {\r",
+											"            validateNoDataIsPresent(response);\r",
+											"        }\r",
+											"    });\r",
+											"} else {\r",
+											"    pm.test(\"Unexpected isActive value\", () => {\r",
+											"        pm.expect.fail(`Received unexpected isActive value: ${isActive}`);\r",
+											"    });\r",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Get the current isActive value from the environment, or initialize it to 0\r",
+											"let isActive = pm.environment.get(\"isActive\") || 0;\r",
+											"\r",
+											"// Toggle isActive between 0 and 1\r",
+											"isActive = (isActive === 1) ? 0 : 1;\r",
+											"\r",
+											"// Set the updated isActive back to the environment\r",
+											"pm.environment.set(\"isActive\", isActive);\r",
+											"\r",
+											"// Set the isActive in the request body\r",
+											"let requestData = {\r",
+											"    \"isActive\": isActive\r",
+											"};\r",
+											"\r",
+											"// Update the request body with the new isActive value\r",
+											"pm.request.body.raw = JSON.stringify(requestData);\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "// {\r\n//         \"questionId\": {{questionId}}\r\n// }\r\n\r\n// {\r\n\r\n// }\r\n\r\n{\r\n    \"isActive\":{{isActive}}\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}questions-data",
+									"host": [
+										"{{base_url}}questions-data"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "questions-list-after-add-full",
 							"event": [
 								{
 									"listen": "test",
@@ -10243,8 +13589,6 @@
 										"exec": [
 											"// Parse the response JSON\r",
 											"var jsonData = pm.response.json();\r",
-											"\r",
-											"\r",
 											"\r",
 											"pm.test(\"Verify 'message' is 'Questions data retrieved successfully'\", function () {\r",
 											"    var jsonData = pm.response.json();\r",
@@ -10493,16 +13837,17 @@
 											"let answerPattern = pm.variables.get(\"answerPattern\");\r",
 											"let question = pm.variables.get(\"question\");\r",
 											"let serialNumber = pm.variables.get(\"serialNumber\");\r",
+											"let answers = pm.variables.get(\"answers\");\r",
+											"let helps = pm.variables.get(\"helps\");\r",
+											"\r",
 											"\r",
 											"// Set the values in the environment or collection\r",
-											"pm.environment.set(\"answerPattern\", answerPattern);\r",
-											"pm.environment.set(\"question\", question);\r",
-											"pm.environment.set(\"serialNumber\", serialNumber);\r",
+											"pm.environment.set(\"answerPatternAfterUpdate\", answerPattern);\r",
+											"pm.environment.set(\"questionAfterUpdate\", question);\r",
+											"pm.environment.set(\"serialNumberAfterUpdate\", serialNumber);\r",
+											"pm.environment.set(\"answersAfterUpdate\", answers);\r",
+											"pm.environment.set(\"helpsAfterUpdate\", helps);\r",
 											"\r",
-											"// Optionally, log the values to ensure they were set correctly\r",
-											"console.log(\"answerPattern:\", answerPattern);\r",
-											"console.log(\"question:\", question);\r",
-											"console.log(\"serialNumber:\", serialNumber);\r",
 											"\r",
 											"// Define the expected fields\r",
 											"const expectedFields = [\"data\", \"errors\", \"message\", \"statusCode\", \"success\"];\r",
